@@ -297,3 +297,31 @@ else:
     if st.button("Ulangi Tes"):
         st.session_state.clear()
         st.rerun()
+    
+    from streamlit_gsheets import GSheetsConnection
+
+    # 1. Inisialisasi Koneksi (Letakkan di bagian atas/luar loop)
+    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
+    
+    # 2. Logika Simpan Data (Letakkan setelah tabel skor/rekomendasi muncul)
+    if st.button("💾 Simpan Hasil ke Database Pusat", use_container_width=True):
+        try:
+            # Ambil data yang sudah ada di Sheets
+            existing_data = conn.read(spreadsheet="URL_GOOGLE_SHEETS_ANDA", usecols=list(range(10)))
+            
+            # Buat baris data baru dari session_state
+            new_row = pd.DataFrame([{
+                **st.session_state.user_data,
+                **st.session_state.scores,
+                "Timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+            }])
+            
+            # Gabungkan data lama dan baru
+            updated_df = pd.concat([existing_data, new_row], ignore_index=True)
+            
+            # Update ke Google Sheets
+            conn.update(spreadsheet="URL_GOOGLE_SHEETS_ANDA", data=updated_df)
+            
+            st.success("✅ Data berhasil disimpan ke Google Sheets!")
+        except Exception as e:
+            st.error(f"Gagal menyimpan data: {e}")
