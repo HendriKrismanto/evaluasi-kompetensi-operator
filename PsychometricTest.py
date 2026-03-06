@@ -343,31 +343,6 @@ else:
         }
         df_export = pd.DataFrame([full_data])
 
-    # --- DEBUGGING BOX (Hanya untuk pengecekan, bisa dihapus nanti) ---
-    with st.expander("🔍 Debug: Cek Data Sebelum Kirim"):
-        # Gabungkan data seperti cara Anda yang sebelumnya
-        debug_data = {
-            **st.session_state.user_data,
-            **st.session_state.scores,
-            "Urutan_Ranking": ranking_str,
-            "Fokus_Training": training_summary
-        }
-        
-        st.write("Data yang akan dikirim ke Google Form:")
-        st.json(debug_data) # Ini akan menampilkan list key dan value secara rapi
-    
-        # Pengecekan otomatis untuk key yang sering salah
-        required_keys = ['Urutan_Ranking', 'Fokus_Training', 'Work Element']
-        for key in required_keys:
-            if key in debug_data:
-                st.success(f"✅ Key '{key}' DITEMUKAN (Isi: {debug_data[key][:30]}...)")
-            else:
-                st.error(f"❌ Key '{key}' TIDAK DITEMUKAN dalam data!")
-    
-    # --- TOMBOL SIMPAN (Gunakan debug_data tadi) ---
-    if st.button("💾 Simpan Hasil ke Database Pusat"):
-        simpan_ke_google_form(debug_data)
-
         # 3. Tombol Download
         st.divider()
         c1, c2 = st.columns(2)
