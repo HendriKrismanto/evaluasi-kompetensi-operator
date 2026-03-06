@@ -10,6 +10,16 @@ import io
 def simpan_ke_google_form(data_dict):
     # GANTI 'viewform' menjadi 'formResponse' (PENTING!)
     url = "https://docs.google.com/forms/d/e/1FAIpQLScpvddBqUfr5gJdkciljnpvZeFPkLkwxhLMswI26b8Rdhty6g/formResponse"
+
+    # Fungsi pembantu untuk membersihkan teks (letakkan di dalam simpan_ke_google_form)
+    def clean_text(text):
+        if text is None: return ""
+        # 1. Pastikan jadi string
+        t = str(text)
+        # 2. Hapus karakter enter/newline yang bikin error di URL
+        t = t.replace("\n", " ").replace("\r", " ")
+        # 3. Hapus spasi berlebih di awal/akhir
+        return t.strip()
     
     # Gunakan Entry ID yang Anda dapatkan dari link pre-filled
     payload = {
@@ -28,8 +38,8 @@ def simpan_ke_google_form(data_dict):
         "entry.562062916": data_dict.get('Efek NG', 0),
         
         # Pastikan data_dict memiliki key ini sebelum memanggil fungsi simpan
-        "entry.870916734": data_dict.get('UrutanRanking', "Tidak Ada"),
-        "entry.1145430443": data_dict.get('FokusTraining', "Tidak Ada"), 
+        "entry.870916734": clean_text(data_dict.get('UrutanRanking')),
+        "entry.1145430443": clean_text(data_dict.get('FokusTraining')), 
     }
     
     try:
