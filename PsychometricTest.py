@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
+import requests
 import random
 import plotly.graph_objects as go
 import pandas as pd
@@ -323,30 +323,55 @@ else:
     if st.button("Ulangi Tes"):
         st.session_state.clear()
         st.rerun()
+
+# --- 1. FUNGSI KIRIM KE GOOGLE FORM ---
+def simpan_ke_google_form(data_dict):
+    # GANTI 'viewform' menjadi 'formResponse' (PENTING!)
+    url = "https://docs.google.com/forms/d/e/1FAIpQLScpvddBqUfr5gJdkciljnpvZeFPkLkwxhLMswI26b8Rdhty6g/formResponse"
     
-  
-    # 1. Inisialisasi Koneksi (Letakkan di bagian atas/luar loop)
-    conn = st.connection("gsheets", type=GSheetsConnection)
+    # Gunakan Entry ID yang Anda dapatkan dari link pre-filled
+    payload = {
+        "entry.1519304593": data_dict['Nama'],
+        "entry.553093979": data_dict['NIK'],
+        "entry.443486013": data_dict['Tanggal'],
+        "entry.790869993": data_dict['Line'],
+        "entry.1284202058": data_dict['Team'],
+        "entry.1725984221": data_dict['Lama Bekerja'],
+        # Tambahkan semua kategori skor Anda di sini
+        "entry.1076580018": data_dict.get('Skor_Work Element', 0),
+        "entry.100503982": data_dict.get('Skor_Pengetahuan Proses', 0),
+        "entry.2025127947": data_dict.get('Skor_Pengetahuan Produk', 0),
+        "entry.619176562": data_dict.get('Skor_Jenis NG', 0),
+        "entry.562062916": data_dict.get('Skor_Efek NG', 0),
+        "entry.870916734": data_dict.get('Urutan_Ranking', 0),
+        "entry.1145430443": data_dict.get('Fokus_Training', 0),
+        # ... dst sampai 5 kategori
+    }
     
-    # 2. Logika Simpan Data (Letakkan setelah tabel skor/rekomendasi muncul)
+    try:
+        r = requests.post(url, data=payload)
+        if r.status_code == 200:
+            st.success("✅ Data Berhasil Disimpan ke Database!")
+        else:
+            st.error(f"❌ Gagal Simpan. Kode: {r.status_code}")
+    except Exception as e:
+        st.error(f"⚠️ Error Koneksi: {e}")
+
+# ... (Kode Evaluasi Anda di sini) ...
+
+# --- 2. BAGIAN HASIL (Paling Bawah) ---
+else:
+    st.header("📊 Profil Kompetensi Operator")
+    # ... (Tampilan Radar Chart & Tabel Skor) ...
+
+    # TOMBOL SIMPAN
     if st.button("💾 Submit Data", use_container_width=True):
-        try:
-            # Ambil data yang sudah ada di Sheets
-            existing_data = conn.read(spreadsheet="https://docs.google.com/spreadsheets/d/1Gmrcnk_PAOx0PuWF0U7Gj3_HKUXrg0DNKmEfmJYWJwY/edit?gid=0#gid=0", usecols=list(range(10)))
-            
-            # Buat baris data baru dari session_state
-            new_row = pd.DataFrame([{
-                **st.session_state.user_data,
-                **st.session_state.scores,
-                "Timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
-            }])
-            
-            # Gabungkan data lama dan baru
-            updated_df = pd.concat([existing_data, new_row], ignore_index=True)
-            
-            # Update ke Google Sheets
-            conn.update(spreadsheet="https://docs.google.com/spreadsheets/d/1Gmrcnk_PAOx0PuWF0U7Gj3_HKUXrg0DNKmEfmJYWJwY/edit?gid=0#gid=0", data=updated_df)
-            
-            st.success("✅ Data berhasil disimpan ke Google Sheets!")
+        # Gabungkan semua data menjadi satu dictionary
+        hasil_akhir = {
+            **st.session_state.user_data,
+            **st.session_state.scores
+        }
+        simpan_ke_google_form(hasil_akhir)
+            st.success("✅ Data berhasil dikirim!")
         except Exception as e:
-            st.error(f"Gagal menyimpan data: {e}")
+            st.error(f"Gagal mengirim data: {e}")
