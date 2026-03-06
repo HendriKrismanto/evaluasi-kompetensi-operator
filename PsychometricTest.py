@@ -375,5 +375,7 @@ else:
         hasil_akhir = {
             **st.session_state.user_data,
             **st.session_state.scores
+            "UrutanRanking": ranking_str,    # TAMBAHKAN INI
+            "FokusTraining": training_summary # TAMBAHKAN INI
         }
         simpan_ke_google_form(hasil_akhir)
