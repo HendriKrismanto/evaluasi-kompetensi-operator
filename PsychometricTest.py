@@ -374,7 +374,7 @@ else:
         # Gabungkan semua data menjadi satu dictionary
         hasil_akhir = {
             **st.session_state.user_data,
-            **st.session_state.scores
+            **st.session_state.scores,
             "UrutanRanking": ranking_str,    # TAMBAHKAN INI
             "FokusTraining": training_summary # TAMBAHKAN INI
         }
