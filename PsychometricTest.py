@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import random
 import plotly.graph_objects as go
 import pandas as pd
@@ -323,16 +324,15 @@ else:
         st.session_state.clear()
         st.rerun()
     
-    from streamlit_gsheets import GSheetsConnection
-
+  
     # 1. Inisialisasi Koneksi (Letakkan di bagian atas/luar loop)
-    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
+    conn = st.connection("gsheets", type=GSheetsConnection)
     
     # 2. Logika Simpan Data (Letakkan setelah tabel skor/rekomendasi muncul)
-    if st.button("💾 Simpan Hasil ke Database Pusat", use_container_width=True):
+    if st.button("💾 Submit Data", use_container_width=True):
         try:
             # Ambil data yang sudah ada di Sheets
-            existing_data = conn.read(spreadsheet="URL_GOOGLE_SHEETS_ANDA", usecols=list(range(10)))
+            existing_data = conn.read(spreadsheet="https://docs.google.com/spreadsheets/d/1Gmrcnk_PAOx0PuWF0U7Gj3_HKUXrg0DNKmEfmJYWJwY/edit?gid=0#gid=0", usecols=list(range(10)))
             
             # Buat baris data baru dari session_state
             new_row = pd.DataFrame([{
@@ -345,7 +345,7 @@ else:
             updated_df = pd.concat([existing_data, new_row], ignore_index=True)
             
             # Update ke Google Sheets
-            conn.update(spreadsheet="URL_GOOGLE_SHEETS_ANDA", data=updated_df)
+            conn.update(spreadsheet="https://docs.google.com/spreadsheets/d/1Gmrcnk_PAOx0PuWF0U7Gj3_HKUXrg0DNKmEfmJYWJwY/edit?gid=0#gid=0", data=updated_df)
             
             st.success("✅ Data berhasil disimpan ke Google Sheets!")
         except Exception as e:
