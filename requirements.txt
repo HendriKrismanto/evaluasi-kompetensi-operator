@@ -1,4 +1,4 @@
-st-gsheets-connection
+requests
 streamlit
 pandas
 plotly
