@@ -354,9 +354,9 @@ else:
             pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
             st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf")
 
-    if st.button("Ulangi Tes"):
-        st.session_state.clear()
-        st.rerun()
+        if st.button("Ulangi Tes"):
+            st.session_state.clear()
+            st.rerun()
         
         # TOMBOL SIMPAN
         if st.button("💾 Submit Data", use_container_width=True):
@@ -367,3 +367,16 @@ else:
             }
             simpan_ke_google_form(hasil_akhir)
             df_export = pd.DataFrame([full_data])
+
+        # 3. Tombol Download
+        st.divider()
+        c1, c2 = st.columns(2)
+        
+        with c1:
+            csv = df_export.to_csv(index=False).encode('utf-8')
+            st.download_button("📂 Download CSV Detail", csv, f"Data_{st.session_state.user_data.get('Nama')}.csv", "text/csv")
+            
+        with c2:
+            pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+            st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf")
+
