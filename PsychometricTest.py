@@ -337,7 +337,7 @@ else:
         # Gabungkan semua ke satu baris data
         full_data = {
             **st.session_state.user_data,
-            **{f"Skor_{k}": v for k, v in st.session_state.scores.items()},
+            **{k: v for k, v in st.session_state.scores.items()},
             "Urutan_Ranking": ranking_str,
             "Fokus_Training": training_summary
         }
