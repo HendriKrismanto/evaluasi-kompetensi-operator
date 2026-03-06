@@ -337,20 +337,11 @@ else:
         # Gabungkan semua ke satu baris data
         full_data = {
             **st.session_state.user_data,
-            **{k: v for k, v in st.session_state.scores.items()},
+            **{f"Skor_{k}": v for k, v in st.session_state.scores.items()},
             "Urutan_Ranking": ranking_str,
             "Fokus_Training": training_summary
         }
-        
-        # TOMBOL SIMPAN
-        if st.button("💾 Submit Data", use_container_width=True):
-        # Gabungkan semua data menjadi satu dictionary
-            hasil_akhir = {
-                **st.session_state.user_data,
-                **st.session_state.scores
-            }
-            simpan_ke_google_form(hasil_akhir)
-            df_export = pd.DataFrame([full_data])
+        df_export = pd.DataFrame([full_data])
 
         # 3. Tombol Download
         st.divider()
@@ -364,6 +355,15 @@ else:
             pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
             st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf")
 
-        if st.button("Ulangi Tes"):
-            st.session_state.clear()
-            st.rerun()
+    if st.button("Ulangi Tes"):
+        st.session_state.clear()
+        st.rerun()
+
+    # TOMBOL SIMPAN
+    if st.button("💾 Submit Data", use_container_width=True):
+        # Gabungkan semua data menjadi satu dictionary
+        hasil_akhir = {
+            **st.session_state.user_data,
+            **st.session_state.scores
+        }
+        simpan_ke_google_form(hasil_akhir)
