@@ -28,8 +28,8 @@ def simpan_ke_google_form(data_dict):
         "entry.562062916": data_dict.get('Efek NG', 0),
         
         # Pastikan data_dict memiliki key ini sebelum memanggil fungsi simpan
-        "entry.870916734": data_dict.get('Urutan_Ranking', "Tidak Ada"),
-        "entry.1145430443": data_dict.get('Fokus_Training', "Tidak Ada"), 
+        "entry.870916734": data_dict.get('UrutanRanking', "Tidak Ada"),
+        "entry.1145430443": data_dict.get('FokusTraining', "Tidak Ada"), 
     }
     
     try:
@@ -338,8 +338,8 @@ else:
         full_data = {
             **st.session_state.user_data,
             **{k: v for k, v in st.session_state.scores.items()},
-            "Urutan_Ranking": ranking_str,
-            "Fokus_Training": training_summary
+            "UrutanRanking": ranking_str,
+            "FokusTraining": training_summary
         }
         df_export = pd.DataFrame([full_data])
 
