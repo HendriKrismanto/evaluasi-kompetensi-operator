@@ -13,21 +13,23 @@ def simpan_ke_google_form(data_dict):
     
     # Gunakan Entry ID yang Anda dapatkan dari link pre-filled
     payload = {
-        "entry.1519304593": data_dict['Nama'],
-        "entry.553093979": data_dict['NIK'],
-        "entry.443486013": data_dict['Tanggal'],
-        "entry.790869993": data_dict['Line'],
-        "entry.1284202058": data_dict['Team'],
-        "entry.1725984221": data_dict['Lama Bekerja'],
-        # Tambahkan semua kategori skor Anda di sini
-        "entry.1076580018": data_dict.get('Skor_Work Element', 0),
-        "entry.100503982": data_dict.get('Skor_Pengetahuan Proses', 0),
-        "entry.2025127947": data_dict.get('Skor_Pengetahuan Produk', 0),
-        "entry.619176562": data_dict.get('Skor_Jenis NG', 0),
-        "entry.562062916": data_dict.get('Skor_Efek NG', 0),
-        "entry.870916734": data_dict.get('Urutan_Ranking', 0),
-        "entry.1145430443": data_dict.get('Fokus_Training', 0),
-        # ... dst sampai 5 kategori
+        "entry.1519304593": data_dict.get('Nama'),
+        "entry.553093979": data_dict.get('NIK'),
+        "entry.443486013": str(data_dict.get('Tanggal')),
+        "entry.790869993": data_dict.get('Line'),
+        "entry.1284202058": data_dict.get('Team'),
+        "entry.1725984221": data_dict.get('Lama Bekerja'),
+        
+        # HAPUS awalan 'Skor_' jika di session_state hanya bernama kategori saja
+        "entry.1076580018": data_dict.get('Work Element', 0),
+        "entry.100503982": data_dict.get('Pengetahuan Proses', 0),
+        "entry.2025127947": data_dict.get('Pengetahuan Produk', 0),
+        "entry.619176562": data_dict.get('Jenis NG', 0),
+        "entry.562062916": data_dict.get('Efek NG', 0),
+        
+        # Pastikan data_dict memiliki key ini sebelum memanggil fungsi simpan
+        "entry.870916734": data_dict.get('Urutan_Ranking', "Tidak Ada"),
+        "entry.1145430443": data_dict.get('Fokus_Training', "Tidak Ada"), 
     }
     
     try:
