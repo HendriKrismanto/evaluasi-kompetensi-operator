@@ -345,12 +345,12 @@ else:
         # TOMBOL SIMPAN
         if st.button("💾 Submit Data", use_container_width=True):
         # Gabungkan semua data menjadi satu dictionary
-        hasil_akhir = {
-            **st.session_state.user_data,
-            **st.session_state.scores
-        }
-        simpan_ke_google_form(hasil_akhir)
-        df_export = pd.DataFrame([full_data])
+            hasil_akhir = {
+                **st.session_state.user_data,
+                **st.session_state.scores
+            }
+            simpan_ke_google_form(hasil_akhir)
+            df_export = pd.DataFrame([full_data])
 
         # 3. Tombol Download
         st.divider()
