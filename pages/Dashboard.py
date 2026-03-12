@@ -106,13 +106,13 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
                         orientation='h',
                         title="Materi yang Paling Sering Muncul sebagai Kelemahan",
                         text_auto=True,
-                        color='Jumlah_Operator',
-                        color_continuous_scale='Reds'
+                        # color='Jumlah_Operator',
+                        # color_continuous_scale='Reds'
                     )
                     
                     fig_pareto.update_layout(
                         yaxis={'categoryorder':'total ascending'},
-                        showlegend=False,
+                        # showlegend=False,
                         height=500,
                         margin=dict(l=50, r=20, t=50, b=50)
                     )
