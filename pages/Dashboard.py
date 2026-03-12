@@ -24,114 +24,75 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
     csv_url = url.replace('/edit?usp=sharing', '/export?format=csv').replace('/edit', '/export?format=csv')
     
     try:
-        # 1. Load Data
+       # 1. Tarik Data
         df = pd.read_csv(csv_url)
         
+        # 2. SINKRONISASI NAMA KOLOM (SESUAI DATA ANDA)
+        # Kita ubah nama kolom dari Sheets ke nama standar agar grafik jalan
         mapping = {
+            'Skor_Work Element': 'Work Element',
+            'Skor_Pengetahuan Proses': 'Pengetahuan Proses',
+            'Skor_Pengetahuan Produk': 'Pengetahuan Produk',
+            'Skor_Jenis NG': 'Jenis NG',
+            'Skor_Efek NG': 'Efek NG',
             'UrutanRanking': 'Urutan_Ranking',
             'FokusTraining': 'Fokus_Training'
         }
         df.rename(columns=mapping, inplace=True)
         
-        # 3. DEFINISI KATEGORI (Pastikan ejaan sama dengan kolom 7-11 di Sheets)
+        # 3. DEFINISI KATEGORI UNTUK GRAFIK
         categories = ['Work Element', 'Pengetahuan Proses', 'Pengetahuan Produk', 'Jenis NG', 'Efek NG']
-        
+
+        # --- MULAI VISUALISASI ---
         if not df.empty:
-            # --- Poin 1: Total Data Masuk (Metrics) ---
-            total_data = len(df)
-            st.metric(label="Total Operator Terdaftar", value=f"{total_data} Orang")
+            # Poin 1: Total Data
+            st.metric(label="Total Operator Terdaftar", value=f"{len(df)} Orang")
             st.divider()
 
-            # Layout Kolom untuk Grafik
+            # Layout Kolom
             row1_col1, row1_col2 = st.columns(2)
 
             with row1_col1:
-                # --- Poin 2: Grafik Batang Peserta per Line ---
+                # Poin 2: Grafik Batang Peserta per Line
                 st.subheader("🏢 Peserta per Line")
                 line_counts = df['Line'].value_counts().reset_index()
                 line_counts.columns = ['Line', 'Jumlah']
-                fig_line = px.bar(line_counts, x='Line', y='Jumlah', 
-                                  color='Line', text_auto=True,
-                                  color_discrete_sequence=px.colors.qualitative.Pastel)
+                fig_line = px.bar(line_counts, x='Line', y='Jumlah', color='Line', text_auto=True)
                 st.plotly_chart(fig_line, use_container_width=True)
 
             with row1_col2:
-                # --- Poin 3: Radar Chart Rata-rata Skor per Kategori ---
+                # Poin 3: Radar Chart Rata-rata Skor (Avg)
                 st.subheader("🎯 Profil Kompetensi Tim (Avg)")
-                
-                # List kategori sesuai BANK_SOAL
-                categories = ['Work Element', 'Pengetahuan Proses', 'Pengetahuan Produk', 'Jenis NG', 'Efek NG']
-                
-                # Hitung rata-rata skor (-12 s/d 12)
+                # Hitung rata-rata skor
                 avg_scores = df[categories].mean().tolist()
-                
-                # Menutup lingkaran radar (tambah titik awal ke akhir)
                 radar_values = avg_scores + [avg_scores[0]]
                 radar_cats = categories + [categories[0]]
                 
-                # Buat Radar Chart menggunakan Graph Objects (sama seperti di hal. utama)
-                fig_radar = go.Figure()
-                fig_radar.add_trace(go.Scatterpolar(
-                    r=radar_values,
-                    theta=radar_cats,
-                    fill='toself',
-                    line_color='teal',
-                    name='Rata-rata Tim'
-                ))
-                
-                fig_radar.update_layout(
-                    polar=dict(
-                        radialaxis=dict(
-                            visible=True,
-                            range=[-12, 12] # Rentang skor ideal 12 blok
-                        )
-                    ),
-                    showlegend=False,
-                    height=300,
-                    margin=dict(l=30, r=30, t=30, b=30)
-                )
-                
+                fig_radar = go.Figure(go.Scatterpolar(r=radar_values, theta=radar_cats, fill='toself', line_color='teal'))
+                fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[-12, 12])), height=300, margin=dict(l=30, r=30, t=30, b=30))
                 st.plotly_chart(fig_radar, use_container_width=True)
 
             st.divider()
 
-            # --- Poin 4: Grafik Batang Pareto Rekomendasi Training ---
-            st.subheader("📉 Pareto Rekomendasi Training (Top Priority)")
+            # Poin 4: Pareto Training
+            st.subheader("📉 Pareto Rekomendasi Training")
             if 'Fokus_Training' in df.columns:
-                # Menggabungkan semua teks training dan menghitung frekuensi kategori
-                all_text = df['Fokus_Training'].str.cat(sep=' | ')
+                # Bersihkan data dari nilai kosong (NaN) sebelum diproses
+                all_text = df['Fokus_Training'].fillna("").str.cat(sep=' | ')
                 counts = {cat: all_text.count(cat) for cat in categories}
+                pareto_df = pd.DataFrame(list(counts.items()), columns=['Kategori', 'Count']).sort_values(by='Count', ascending=False)
                 
-                # Buat DataFrame Pareto
-                pareto_df = pd.DataFrame(list(counts.items()), columns=['Kategori', 'Count'])
-                pareto_df = pareto_df.sort_values(by='Count', ascending=False)
-                pareto_df['Cumulative'] = pareto_df['Count'].cumsum() / pareto_df['Count'].sum() * 100
-
-                # Buat Chart Gabungan (Bar + Line)
-                fig_pareto = go.Figure()
-                fig_pareto.add_trace(go.Bar(x=pareto_df['Kategori'], y=pareto_df['Count'], name="Jumlah Keluhan", marker_color='indianred'))
-                fig_pareto.add_trace(go.Scatter(x=pareto_df['Kategori'], y=pareto_df['Cumulative'], name="% Kumulatif", yaxis="y2", line=dict(color="blue", width=3)))
-
-                fig_pareto.update_layout(
-                    yaxis=dict(title="Jumlah Operator"),
-                    yaxis2=dict(title="Persentase Kumulatif (%)", overlaying="y", side="right", range=[0, 110]),
-                    legend=dict(x=0.8, y=1.1)
-                )
+                fig_pareto = px.bar(pareto_df, x='Kategori', y='Count', title="Frekuensi Kelemahan per Kategori", color_discrete_sequence=['indianred'])
                 st.plotly_chart(fig_pareto, use_container_width=True)
             
             st.divider()
 
-            # --- Poin 5: Tabel Data Lengkap ---
+            # Poin 5: Tabel Database
             st.subheader("📋 Tabel Database Lengkap")
-            # Filter kolom agar tidak terlalu penuh
-            cols_to_show = ['Nama', 'NIK', 'Line', 'Team', 'Lama Bekerja', 'Urutan_Ranking', 'Timestamp']
-            st.dataframe(df[cols_to_show], use_container_width=True)
+            # Menampilkan kolom penting saja di tabel utama
+            st.dataframe(df[['Nama', 'NIK', 'Line', 'Team', 'Urutan_Ranking', 'Fokus_Training']], use_container_width=True)
 
-        else:
-            st.warning("Database masih kosong. Belum ada operator yang melakukan submit.")
-            
     except Exception as e:
-        st.error(f"Gagal memuat data dari Google Sheets. Pastikan link benar dan akses sudah 'Anyone with link'. Error: {e}")
-else:
-    st.error("Konfigurasi [connections.gsheets] tidak ditemukan di Secrets.")
+        st.error(f"Terjadi kesalahan teknis: {e}")
+        st.write("Cek Nama Kolom Sheets Anda:", df.columns.tolist())
 
