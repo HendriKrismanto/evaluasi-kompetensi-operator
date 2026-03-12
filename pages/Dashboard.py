@@ -2,6 +2,15 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import io
+
+def to_excel(df):
+    output = io.BytesIO()
+    # Menggunakan XlsxWriter sebagai engine agar file lebih rapi
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Rekap_Kompetensi')
+    processed_data = output.getvalue()
+    return processed_data
 
 # --- 1. PROTEKSI HALAMAN (TAMBAHKAN DI PALING ATAS) ---
 # Mengecek apakah user sudah login sebagai admin dari halaman utama
@@ -153,7 +162,21 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
             # Menampilkan kolom penting saja di tabel utama
             st.dataframe(df[['Nama', 'NIK', 'Line', 'Team', 'Urutan_Ranking', 'Fokus_Training']], use_container_width=True)
 
+            st.divider()
+            st.subheader("💾 Download Rekap Data")
+            
+            excel_data = to_excel(df) # Memanggil fungsi konversi
+            st.download_button(
+                label="📥 Download Database ke Excel (.xlsx)",
+                data=excel_data,
+                file_name=f"Rekap_Kompetensi_{pd.Timestamp.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+
     except Exception as e:
         st.error(f"Terjadi kesalahan teknis: {e}")
         st.write("Cek Nama Kolom Sheets Anda:", df.columns.tolist())
+
+
 
