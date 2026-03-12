@@ -64,18 +64,42 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
                 st.plotly_chart(fig_line, use_container_width=True)
 
             with row1_col2:
-                # --- Poin 3: Pie Chart Rata-rata Skor per Kategori ---
-                st.subheader("🎯 Avg Skor per Kategori")
+                # --- Poin 3: Radar Chart Rata-rata Skor per Kategori ---
+                st.subheader("🎯 Profil Kompetensi Tim (Avg)")
+                
                 # List kategori sesuai BANK_SOAL
                 categories = ['Work Element', 'Pengetahuan Proses', 'Pengetahuan Produk', 'Jenis NG', 'Efek NG']
-                # Hitung rata-rata dan ubah ke persentase (asumsi range -12 s/d 12)
-                avg_scores = df[categories].mean()
-                avg_pct = ((avg_scores + 12) / 24) * 100
                 
-                fig_pie = px.pie(values=avg_pct.values, names=avg_pct.index, 
-                 hole=0.4, color_discrete_sequence=px.colors.qualitative.Plotly)
-                fig_pie.update_traces(textinfo='percent+label')
-                st.plotly_chart(fig_pie, use_container_width=True)
+                # Hitung rata-rata skor (-12 s/d 12)
+                avg_scores = df[categories].mean().tolist()
+                
+                # Menutup lingkaran radar (tambah titik awal ke akhir)
+                radar_values = avg_scores + [avg_scores[0]]
+                radar_cats = categories + [categories[0]]
+                
+                # Buat Radar Chart menggunakan Graph Objects (sama seperti di hal. utama)
+                fig_radar = go.Figure()
+                fig_radar.add_trace(go.Scatterpolar(
+                    r=radar_values,
+                    theta=radar_cats,
+                    fill='toself',
+                    line_color='teal',
+                    name='Rata-rata Tim'
+                ))
+                
+                fig_radar.update_layout(
+                    polar=dict(
+                        radialaxis=dict(
+                            visible=True,
+                            range=[-12, 12] # Rentang skor ideal 12 blok
+                        )
+                    ),
+                    showlegend=False,
+                    height=400,
+                    margin=dict(l=40, r=40, t=20, b=20)
+                )
+                
+                st.plotly_chart(fig_radar, use_container_width=True)
 
             st.divider()
 
