@@ -24,36 +24,31 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
     csv_url = url.replace('/edit?usp=sharing', '/export?format=csv').replace('/edit', '/export?format=csv')
     
     try:
-        # Load data dengan cache dibersihkan tiap buka (ttl=0)
+        # 1. Load Data
         df = pd.read_csv(csv_url)
-
+        
+        # 2. PROSES MAPPING (Penyelarasan Nama Kolom)
+        # Daftar kata kunci yang dicari di Google Sheets
         keywords = [
             'Work Element', 'Pengetahuan Proses', 'Pengetahuan Produk', 
             'Jenis NG', 'Efek NG', 'Urutan_Ranking', 'Fokus_Training'
         ]
-
-        # --- TAMBAHKAN BLOK PEMBERSIHAN KOLOM INI ---
-        # # Kita cari kolom yang mengandung kata kunci kategori
-        # mapping = {
-        #     'Work Element': 'Work Element',
-        #     'Pengetahuan Proses': 'Pengetahuan Proses',
-        #     'Pengetahuan Produk': 'Pengetahuan Produk',
-        #     'Jenis NG': 'Jenis NG',
-        #     'Efek NG': 'Efek NG',
-        #     'Urutan_Ranking': 'Urutan_Ranking',
-        #     'Fokus_Training': 'Fokus_Training'
-        # }
         
-        # Loop untuk mengganti nama kolom yang panjang dari Google Form
-        for key in mapping.keys():
-            # Cari kolom yang mengandung kata kunci (tidak peduli huruf besar/kecil)
+        for key in keywords:
+            # Cari kolom yang mirip (abaikan spasi, garis bawah, dan huruf besar/kecil)
             match = [c for c in df.columns if key.lower().replace("_", " ") in c.lower().replace("_", " ")]
             if match:
+                # Ganti nama kolom asli (match[0]) menjadi nama standar (key)
                 df.rename(columns={match[0]: key}, inplace=True)
-                # df.rename(columns={match[0]: target}, inplace=True)
-            # cols = [c for c in df.columns if key in c]
-            # if cols:
-            #     df.rename(columns={cols[0]: key}, inplace=True)
+        
+        # 3. Validasi Kolom (Cek apakah kolom wajib sudah ada)
+        required_cols = ['Work Element', 'Urutan_Ranking']
+        missing = [c for c in required_cols if c not in df.columns]
+        
+        if missing:
+            st.error(f"Kolom berikut tidak ditemukan di Sheets: {missing}")
+            st.write("Kolom yang ada di Sheets Anda:", df.columns.tolist())
+            st.stop()
         
         if not df.empty:
             # --- Poin 1: Total Data Masuk (Metrics) ---
