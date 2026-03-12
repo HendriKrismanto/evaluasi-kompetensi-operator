@@ -26,6 +26,23 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
     try:
         # Load data dengan cache dibersihkan tiap buka (ttl=0)
         df = pd.read_csv(csv_url)
+
+        # --- TAMBAHKAN BLOK PEMBERSIHAN KOLOM INI ---
+        # Kita cari kolom yang mengandung kata kunci kategori
+        mapping = {
+            'Work Element': 'Work Element',
+            'Pengetahuan Proses': 'Pengetahuan Proses',
+            'Pengetahuan Produk': 'Pengetahuan Produk',
+            'Jenis NG': 'Jenis NG',
+            'Efek NG': 'Efek NG'
+        }
+        
+        # Loop untuk mengganti nama kolom yang panjang dari Google Form
+        for key in mapping.keys():
+            # Cari kolom yang namanya mirip/mengandung kata kunci kategori
+            cols = [c for c in df.columns if key in c]
+            if cols:
+                df.rename(columns={cols[0]: key}, inplace=True)
         
         if not df.empty:
             # --- Poin 1: Total Data Masuk (Metrics) ---
