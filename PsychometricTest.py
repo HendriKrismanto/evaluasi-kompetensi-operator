@@ -88,6 +88,7 @@ def kirim_email_pdf(pdf_bytes, user_data):
         server.quit()
         # st.info("📩 Salinan laporan PDF otomatis telah dikirim ke Email Admin.")
     except Exception as e:
+        st.error(f"DEBUG EMAIL ERROR: {e}")
         # st.error(f"⚠️ Gagal mengirim email: {e}")
         pass
 
