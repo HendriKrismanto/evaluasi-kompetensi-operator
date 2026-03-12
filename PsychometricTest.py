@@ -6,6 +6,12 @@ import pandas as pd
 from fpdf import FPDF
 import io
 
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+
 # --- 1. FUNGSI KIRIM KE GOOGLE FORM ---
 def simpan_ke_google_form(data_dict):
     # GANTI 'viewform' menjadi 'formResponse' (PENTING!)
@@ -50,6 +56,38 @@ def simpan_ke_google_form(data_dict):
             st.error(f"❌ Gagal Simpan. Kode: {r.status_code}")
     except Exception as e:
         st.error(f"⚠️ Error Koneksi: {e}")
+
+def kirim_email_pdf(pdf_bytes, user_data):
+    # Mengambil data dari Secrets yang baru Anda isi
+    sender = st.secrets["email_sender"]
+    password = st.secrets["email_password"]
+    receiver = st.secrets["email_receiver"]
+    
+    msg = MIMEMultipart()
+    msg['From'] = sender
+    msg['To'] = receiver
+    msg['Subject'] = f"Laporan Kompetensi: {user_data.get('Nama')} ({user_data.get('NIK')})"
+    
+    body = f"Terlampir laporan evaluasi kompetensi untuk operator:\n\nNama: {user_data.get('Nama')}\nNIK: {user_data.get('NIK')}\nLine: {user_data.get('Line')}"
+    msg.attach(MIMEText(body, 'plain'))
+    
+    # Lampirkan PDF
+    part = MIMEBase('application', 'octet-stream')
+    part.set_payload(pdf_bytes)
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', f"attachment; filename= Laporan_{user_data.get('NIK')}.pdf")
+    msg.attach(part)
+    
+    try:
+        # Koneksi ke server Gmail
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender, password)
+        server.send_message(msg)
+        server.quit()
+        st.info("📩 Salinan laporan PDF otomatis telah dikirim ke Email Admin.")
+    except Exception as e:
+        st.error(f"⚠️ Gagal mengirim email: {e}")
 
 def check_password():
     """Returns True if the user had the correct password."""
@@ -371,11 +409,20 @@ else:
 
     # TOMBOL SIMPAN
     if st.button("💾 Submit Data", use_container_width=True):
-        # Gabungkan semua data menjadi satu dictionary
+        # A. Gabungkan data untuk Google Sheets
         hasil_akhir = {
             **st.session_state.user_data,
             **st.session_state.scores,
-            "UrutanRanking": ranking_str,    # TAMBAHKAN INI
-            "FokusTraining": training_summary # TAMBAHKAN INI
+            "UrutanRanking": ranking_str,
+            "FokusTraining": training_summary
         }
+        
+        # B. Jalankan Fungsi Simpan Google Form
         simpan_ke_google_form(hasil_akhir)
+        
+        # C. Jalankan Fungsi Kirim Email PDF
+        # Kita buat PDF-nya dulu di memori
+        pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+        
+        # Kirim PDF dalam bentuk bytes
+        kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
