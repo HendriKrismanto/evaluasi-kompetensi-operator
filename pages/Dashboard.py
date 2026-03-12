@@ -34,15 +34,20 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
             'Pengetahuan Proses': 'Pengetahuan Proses',
             'Pengetahuan Produk': 'Pengetahuan Produk',
             'Jenis NG': 'Jenis NG',
-            'Efek NG': 'Efek NG'
+            'Efek NG': 'Efek NG',
+            'Urutan_Ranking': 'Urutan_Ranking',
+            'Fokus_Training': 'Fokus_Training'
         }
         
         # Loop untuk mengganti nama kolom yang panjang dari Google Form
         for key in mapping.keys():
-            # Cari kolom yang namanya mirip/mengandung kata kunci kategori
-            cols = [c for c in df.columns if key in c]
-            if cols:
-                df.rename(columns={cols[0]: key}, inplace=True)
+            # Cari kolom yang mengandung kata kunci (tidak peduli huruf besar/kecil)
+            match = [c for c in df.columns if key.lower().replace("_", " ") in c.lower().replace("_", " ")]
+            if match:
+                df.rename(columns={match[0]: target}, inplace=True)
+            # cols = [c for c in df.columns if key in c]
+            # if cols:
+            #     df.rename(columns={cols[0]: key}, inplace=True)
         
         if not df.empty:
             # --- Poin 1: Total Data Masuk (Metrics) ---
