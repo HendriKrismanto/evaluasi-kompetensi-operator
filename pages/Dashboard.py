@@ -112,6 +112,7 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
                     
                     fig_pareto.update_layout(
                         yaxis={'categoryorder':'total ascending'},
+                        showlegend=False,
                         height=500,
                         margin=dict(l=50, r=20, t=50, b=50)
                     )
