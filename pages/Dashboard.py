@@ -73,7 +73,7 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
                 avg_pct = ((avg_scores + 12) / 24) * 100
                 
                 fig_pie = px.pie(values=avg_pct.values, names=avg_pct.index, 
-                                 hole=0.4, color_discrete_sequence=px.colors.qualitative.Teal)
+                 hole=0.4, color_discrete_sequence=px.colors.qualitative.Plotly)
                 fig_pie.update_traces(textinfo='percent+label')
                 st.plotly_chart(fig_pie, use_container_width=True)
 
