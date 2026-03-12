@@ -84,8 +84,8 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
             sorted_avg = sorted(avg_scores_dict.items(), key=lambda x: x[1], reverse=True)
             
             # 3. Buat string Ranking untuk tampilan
-            ranking_team_str = ", ".join([f"{c} ({s:.1f} pts)" for c, s in sorted_avg])
-            st.info(f"**Urutan Kekuatan Tim:** {ranking_team_str}")
+            # ranking_team_str = ", ".join([f"{c} ({s:.1f} pts)" for c, s in sorted_avg])
+            # st.info(f"**Urutan Kekuatan Tim:** {ranking_team_str}")
             
             # 4. Tampilkan Metrics Persentase (Sama dengan tampilan operator)
             cols_metrics = st.columns(len(sorted_avg))
