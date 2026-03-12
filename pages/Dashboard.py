@@ -74,6 +74,32 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
 
             st.divider()
 
+            # Skor & ranking kompetensi
+            st.subheader("🏆 Skor & Ranking Kompetensi Tim (Avg)")
+            
+            # 1. Hitung rata-rata skor tim untuk setiap kategori
+            avg_scores_dict = df[categories].mean().to_dict()
+            
+            # 2. Urutkan dari yang tertinggi untuk Ranking
+            sorted_avg = sorted(avg_scores_dict.items(), key=lambda x: x[1], reverse=True)
+            
+            # 3. Buat string Ranking untuk tampilan
+            ranking_team_str = ", ".join([f"{c} ({s:.1f} pts)" for c, s in sorted_avg])
+            st.info(f"**Urutan Kekuatan Tim:** {ranking_team_str}")
+            
+            # 4. Tampilkan Metrics Persentase (Sama dengan tampilan operator)
+            cols_metrics = st.columns(len(sorted_avg))
+            for i, (cat, score) in enumerate(sorted_avg):
+                # Rumus persentase yang sama: ((score + 12) / 24) * 100
+                persentase_avg = int(((score + 12) / 24) * 100)
+                cols_metrics[i].metric(
+                    label=cat, 
+                    value=f"{persentase_avg}%", 
+                    delta=f"{score:.1f} pts avg"
+                )
+
+            st.divider()
+
             # Poin 4: Pareto Training
             # --- Poin 4: Pareto Rekomendasi Training (Berdasarkan Pernyataan) ---
             st.subheader("📉 Top 10 Materi Training Paling Dibutuhkan")
