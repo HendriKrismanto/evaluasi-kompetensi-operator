@@ -27,28 +27,14 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
         # 1. Load Data
         df = pd.read_csv(csv_url)
         
-        # 2. PROSES MAPPING (Penyelarasan Nama Kolom)
-        # Daftar kata kunci yang dicari di Google Sheets
-        keywords = [
-            'Work Element', 'Pengetahuan Proses', 'Pengetahuan Produk', 
-            'Jenis NG', 'Efek NG', 'Urutan_Ranking', 'Fokus_Training'
-        ]
+        mapping = {
+            'UrutanRanking': 'Urutan_Ranking',
+            'FokusTraining': 'Fokus_Training'
+        }
+        df.rename(columns=mapping, inplace=True)
         
-        for key in keywords:
-            # Cari kolom yang mirip (abaikan spasi, garis bawah, dan huruf besar/kecil)
-            match = [c for c in df.columns if key.lower().replace("_", " ") in c.lower().replace("_", " ")]
-            if match:
-                # Ganti nama kolom asli (match[0]) menjadi nama standar (key)
-                df.rename(columns={match[0]: key}, inplace=True)
-        
-        # 3. Validasi Kolom (Cek apakah kolom wajib sudah ada)
-        required_cols = ['Work Element', 'Urutan_Ranking']
-        missing = [c for c in required_cols if c not in df.columns]
-        
-        if missing:
-            st.error(f"Kolom berikut tidak ditemukan di Sheets: {missing}")
-            st.write("Kolom yang ada di Sheets Anda:", df.columns.tolist())
-            st.stop()
+        # 3. DEFINISI KATEGORI (Pastikan ejaan sama dengan kolom 7-11 di Sheets)
+        categories = ['Work Element', 'Pengetahuan Proses', 'Pengetahuan Produk', 'Jenis NG', 'Efek NG']
         
         if not df.empty:
             # --- Poin 1: Total Data Masuk (Metrics) ---
