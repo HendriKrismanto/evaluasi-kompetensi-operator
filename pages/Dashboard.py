@@ -75,15 +75,49 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
             st.divider()
 
             # Poin 4: Pareto Training
-            st.subheader("📉 Pareto Rekomendasi Training")
+            # --- Poin 4: Pareto Rekomendasi Training (Berdasarkan Pernyataan) ---
+            st.subheader("📉 Top 10 Materi Training Paling Dibutuhkan")
+            
             if 'Fokus_Training' in df.columns:
-                # Bersihkan data dari nilai kosong (NaN) sebelum diproses
+                # 1. Ambil semua teks, bersihkan, dan pecah berdasarkan separator | atau /
+                # Kita asumsikan formatnya: [Kategori]: Pernyataan1/Pernyataan2 | [Kategori]: ...
                 all_text = df['Fokus_Training'].fillna("").str.cat(sep=' | ')
-                counts = {cat: all_text.count(cat) for cat in categories}
-                pareto_df = pd.DataFrame(list(counts.items()), columns=['Kategori', 'Count']).sort_values(by='Count', ascending=False)
                 
-                fig_pareto = px.bar(pareto_df, x='Kategori', y='Count', title="Frekuensi Kelemahan per Kategori", color_discrete_sequence=['indianred'])
-                st.plotly_chart(fig_pareto, use_container_width=True)
+                # Membersihkan teks dari label kategori [Kategori]: agar fokus ke pernyataannya
+                import re
+                clean_text = re.sub(r'\[.*?\]:', '', all_text)
+                
+                # Pecah menjadi list pernyataan individu
+                raw_items = [item.strip() for item in clean_text.replace('|', '/').split('/') if item.strip()]
+                
+                if raw_items:
+                    # 2. Hitung frekuensi tiap pernyataan
+                    item_counts = pd.Series(raw_items).value_counts().reset_index()
+                    item_counts.columns = ['Materi_Training', 'Jumlah_Operator']
+                    
+                    # Ambil 10 besar saja agar grafik tidak terlalu penuh
+                    top_10_training = item_counts.head(10)
+
+                    # 3. Visualisasi Grafik Batang Horizontal (lebih mudah dibaca untuk teks panjang)
+                    fig_pareto = px.bar(
+                        top_10_training, 
+                        y='Materi_Training', 
+                        x='Jumlah_Operator',
+                        orientation='h',
+                        title="Materi yang Paling Sering Muncul sebagai Kelemahan",
+                        text_auto=True,
+                        color='Jumlah_Operator',
+                        color_continuous_scale='Reds'
+                    )
+                    
+                    fig_pareto.update_layout(
+                        yaxis={'categoryorder':'total ascending'},
+                        height=500,
+                        margin=dict(l=50, r=20, t=50, b=50)
+                    )
+                    st.plotly_chart(fig_pareto, use_container_width=True)
+                else:
+                    st.info("Belum ada data kelemahan spesifik yang tercatat.")
             
             st.divider()
 
