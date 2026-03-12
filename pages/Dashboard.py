@@ -4,6 +4,34 @@ import plotly.express as px
 import plotly.graph_objects as go
 import io
 
+# --- 1. KONFIGURASI HALAMAN ---
+st.set_page_config(page_title="Dashboard Rekap", layout="wide")
+
+# --- 2. CSS KHUSUS UNTUK PRINT A4 ---
+st.markdown("""
+    <style>
+    @media print {
+        /* Sembunyikan Sidebar, Tombol, dan Header Streamlit saat Print */
+        [data-testid="stSidebar"], .stButton, .stDownloadButton, header, footer {
+            display: none !important;
+        }
+        /* Paksa konten menggunakan lebar penuh */
+        .main .block-container {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+        /* Atur agar grafik tidak terpotong di tengah halaman */
+        .element-container {
+            page-break-inside: avoid;
+        }
+        h1, h2, h3 {
+            color: black !important;
+        }
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 def to_excel(df):
     output = io.BytesIO()
     # Menggunakan XlsxWriter sebagai engine agar file lebih rapi
