@@ -27,24 +27,30 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
         # Load data dengan cache dibersihkan tiap buka (ttl=0)
         df = pd.read_csv(csv_url)
 
+        keywords = [
+            'Work Element', 'Pengetahuan Proses', 'Pengetahuan Produk', 
+            'Jenis NG', 'Efek NG', 'Urutan_Ranking', 'Fokus_Training'
+        ]
+
         # --- TAMBAHKAN BLOK PEMBERSIHAN KOLOM INI ---
-        # Kita cari kolom yang mengandung kata kunci kategori
-        mapping = {
-            'Work Element': 'Work Element',
-            'Pengetahuan Proses': 'Pengetahuan Proses',
-            'Pengetahuan Produk': 'Pengetahuan Produk',
-            'Jenis NG': 'Jenis NG',
-            'Efek NG': 'Efek NG',
-            'Urutan_Ranking': 'Urutan_Ranking',
-            'Fokus_Training': 'Fokus_Training'
-        }
+        # # Kita cari kolom yang mengandung kata kunci kategori
+        # mapping = {
+        #     'Work Element': 'Work Element',
+        #     'Pengetahuan Proses': 'Pengetahuan Proses',
+        #     'Pengetahuan Produk': 'Pengetahuan Produk',
+        #     'Jenis NG': 'Jenis NG',
+        #     'Efek NG': 'Efek NG',
+        #     'Urutan_Ranking': 'Urutan_Ranking',
+        #     'Fokus_Training': 'Fokus_Training'
+        # }
         
         # Loop untuk mengganti nama kolom yang panjang dari Google Form
         for key in mapping.keys():
             # Cari kolom yang mengandung kata kunci (tidak peduli huruf besar/kecil)
             match = [c for c in df.columns if key.lower().replace("_", " ") in c.lower().replace("_", " ")]
             if match:
-                df.rename(columns={match[0]: target}, inplace=True)
+                df.rename(columns={match[0]: key}, inplace=True)
+                # df.rename(columns={match[0]: target}, inplace=True)
             # cols = [c for c in df.columns if key in c]
             # if cols:
             #     df.rename(columns={cols[0]: key}, inplace=True)
