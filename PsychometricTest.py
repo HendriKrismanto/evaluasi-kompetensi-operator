@@ -125,6 +125,18 @@ def check_password():
 if not check_password():
     st.stop()  # Berhenti di sini jika belum login
 
+# 2. DI SINI TEMPATNYA (Tepat setelah login berhasil)
+if "role" in st.session_state and st.session_state["role"] == "operator":
+    st.markdown("""
+        <style>
+            /* Mengsembunyikan menu navigasi di sidebar */
+            [data-testid="stSidebarNav"] {display: none;}
+            
+            /* (Opsional) Mengsembunyikan tombol 'X' penutup sidebar */
+            [data-testid="collapsedControl"] {display: none;}
+        </style>
+    """, unsafe_allow_html=True)
+
 # --- 1. DATA PERNYATAAN ---
 BANK_SOAL = {
     'Work Element': [
