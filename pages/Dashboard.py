@@ -95,8 +95,8 @@ if "connections" in st.secrets and "gsheets" in st.secrets.connections:
                         )
                     ),
                     showlegend=False,
-                    height=400,
-                    margin=dict(l=40, r=40, t=20, b=20)
+                    height=300,
+                    margin=dict(l=30, r=30, t=30, b=30)
                 )
                 
                 st.plotly_chart(fig_radar, use_container_width=True)
