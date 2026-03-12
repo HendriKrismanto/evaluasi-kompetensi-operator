@@ -281,29 +281,42 @@ elif not st.session_state.finished:
     st.write(f"### Blok {st.session_state.step} dari {MAX_BLOCKS}")
     st.progress(st.session_state.step / MAX_BLOCKS)
 
+    # --- LOGIKA PENGACAKAN DINAMIS (REVISI) ---
+    # Gunakan kombinasi NIK dan Step agar urutan UNIK per operator
+    # Jika NIK belum ada (saat refresh), gunakan seed random murni
+    user_nik = st.session_state.user_data.get('NIK', 'random')
+    random.seed(f"{user_nik}_{st.session_state.step}")
+    
     # --- 1. LOGIKA PENGACAKAN MERATA (REVISI) ---
     # Gunakan seed berdasarkan step agar pilihan konsisten jika halaman refresh
-    random.seed(st.session_state.step)
+    # random.seed(st.session_state.step)
     
     cats = list(BANK_SOAL.keys())
     block = []
     
+    # Ambil NIK sebagai dasar pengacakan agar konsisten per orang
+    user_nik = st.session_state.user_data.get('NIK', '0')
+    
     for c in cats:
-        # Mengambil soal berdasarkan urutan (cycle) agar semua 8 soal terpakai merata
-        # Rumus: (step - 1) % len(soal) memastikan soal ke-1 s/d 8 muncul bergilir
-        idx = (st.session_state.step - 1) % len(BANK_SOAL[c])
-        block.append({'cat': c, 'text': BANK_SOAL[c][idx]})
+        # 1. Ambil daftar soal asli
+        soal_list = list(BANK_SOAL[c])
+        
+        # 2. Acak daftar soal tersebut KHUSUS untuk NIK ini
+        # Ini membuat Operator A punya urutan (1,3,2..) dan Operator B (4,1,3..)
+        random.seed(user_nik) 
+        random.shuffle(soal_list)
+        
+        # 3. Ambil soal berdasarkan urutan langkah (step) dari daftar yang sudah diacak
+        # Tetap menggunakan rumus cycle (%) agar merata
+        idx = (st.session_state.step - 1) % len(soal_list)
+        
+        block.append({'cat': c, 'text': soal_list[idx]})
     
-    # Acak urutan tampilan kategori agar kategori pertama tidak selalu di atas
+    # 4. Terakhir, acak posisi tampilan di layar (Most-Least) agar tidak monoton
+    # Gunakan seed gabungan agar posisi tidak berubah jika halaman refresh
+    random.seed(f"{user_nik}_{st.session_state.step}")
     random.shuffle(block)
-
     
-    # Mengacak soal per blok
-    # random.seed(st.session_state.step)
-    # cats = list(BANK_SOAL.keys())
-    # block = [{'cat': c, 'text': random.choice(BANK_SOAL[c])} for c in cats]
-    # random.shuffle(block)
-
     with st.container(border=True):
         st.markdown(
             "**Pilih satu pernyataan yang PALING menggambarkan Anda:**  \n"
@@ -392,16 +405,16 @@ else:
         df_export = pd.DataFrame([full_data])
 
         # 3. Tombol Download
-        st.divider()
-        c1, c2 = st.columns(2)
+        # st.divider()
+        # c1, c2 = st.columns(2)
         
-        with c1:
-            csv = df_export.to_csv(index=False).encode('utf-8')
-            st.download_button("📂 Download CSV Detail", csv, f"Data_{st.session_state.user_data.get('Nama')}.csv", "text/csv")
+        # with c1:
+        #     csv = df_export.to_csv(index=False).encode('utf-8')
+        #     st.download_button("📂 Download CSV Detail", csv, f"Data_{st.session_state.user_data.get('Nama')}.csv", "text/csv")
             
-        with c2:
-            pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
-            st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf")
+        # with c2:
+        #     pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+        #     st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf")
 
     if st.button("Ulangi Tes"):
         st.session_state.clear()
