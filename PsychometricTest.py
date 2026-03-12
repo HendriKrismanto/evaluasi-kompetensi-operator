@@ -50,13 +50,12 @@ def simpan_ke_google_form(data_dict):
     
     try:
         r = requests.post(url, data=payload)
-        # if r.status_code == 200:
-            # st.success("✅ Data Berhasil Disimpan ke Database!")
-        # else:
-            # st.error(f"❌ Gagal Simpan. Kode: {r.status_code}")
+        if r.status_code == 200:
+            st.success("✅ Data Berhasil Disimpan ke Database!")
+        else:
+            st.error(f"❌ Gagal Simpan. Kode: {r.status_code}")
     except Exception as e:
-        # st.error(f"⚠️ Error Koneksi: {e}")
-        pass
+        st.error(f"⚠️ Error Koneksi: {e}")
 
 def kirim_email_pdf(pdf_bytes, user_data):
     # Mengambil data dari Secrets yang baru Anda isi
@@ -82,15 +81,13 @@ def kirim_email_pdf(pdf_bytes, user_data):
     try:
         # Koneksi ke server Gmail
         server = smtplib.SMTP('smtp.gmail.com', 587)
-        # server.starttls()
-        # server.login(sender, password)
-        # server.send_message(msg)
+        server.starttls()
+        server.login(sender, password)
+        server.send_message(msg)
         server.quit()
-        # st.info("📩 Salinan laporan PDF otomatis telah dikirim ke Email Admin.")
+        st.info("📩 Salinan laporan otomatis telah dikirim ke Admin.")
     except Exception as e:
-        st.error(f"DEBUG EMAIL ERROR: {e}")
-        # st.error(f"⚠️ Gagal mengirim email: {e}")
-        pass
+        st.error(f"⚠️ Gagal mengirim laporan: {e}")
 
 def check_password():
     """Returns True if the user had the correct password."""
@@ -412,21 +409,20 @@ else:
 
     # TOMBOL SIMPAN
     if st.button("💾 Submit Data", use_container_width=True):
-        # Tambahkan loading spinner agar terlihat profesional
-        with st.spinner("Sedang memproses data..."):
-            hasil_akhir = {
-                **st.session_state.user_data,
-                **st.session_state.scores,
-                "UrutanRanking": ranking_str,
-                "FokusTraining": training_summary
-            }
-            
-            # 1. Jalankan simpan ke Google Form
-            simpan_ke_google_form(hasil_akhir)
-            
-            # 2. Jalankan kirim email PDF
-            pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
-            kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
-            
-            # 3. BARU MUNCULKAN SATU NOTIFIKASI TUNGGAL DI SINI
-            st.success("✅ Seluruh Data Berhasil Disimpan ke Database!")
+        # A. Gabungkan data untuk Google Sheets
+        hasil_akhir = {
+            **st.session_state.user_data,
+            **st.session_state.scores,
+            "UrutanRanking": ranking_str,
+            "FokusTraining": training_summary
+        }
+        
+        # B. Jalankan Fungsi Simpan Google Form
+        simpan_ke_google_form(hasil_akhir)
+        
+        # C. Jalankan Fungsi Kirim Email PDF
+        # Kita buat PDF-nya dulu di memori
+        pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+        
+        # Kirim PDF dalam bentuk bytes
+        kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
