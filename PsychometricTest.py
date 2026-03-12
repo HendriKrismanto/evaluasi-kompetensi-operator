@@ -93,12 +93,23 @@ def check_password():
     """Returns True if the user had the correct password."""
 
     def password_entered():
-        """Checks whether a password entered by the user is correct."""
         if st.session_state["password"] == st.secrets["password"]:
             st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Hapus password dari session_state
+            st.session_state["role"] = "admin" # Set sebagai admin jika password ini benar
+            del st.session_state["password"]
+        elif st.session_state["password"] == "JID12345": # Contoh password operator
+            st.session_state["password_correct"] = True
+            st.session_state["role"] = "operator" # Set sebagai operator
+            del st.session_state["password"]
         else:
             st.session_state["password_correct"] = False
+        
+        # """Checks whether a password entered by the user is correct."""
+        # if st.session_state["password"] == st.secrets["password"]:
+        #     st.session_state["password_correct"] = True
+        #     del st.session_state["password"]  # Hapus password dari session_state
+        # else:
+        #     st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
         # Tampilan Form Login
