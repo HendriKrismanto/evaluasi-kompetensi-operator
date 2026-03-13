@@ -51,7 +51,7 @@ def simpan_ke_google_form(data_dict):
     try:
         r = requests.post(url, data=payload)
         if r.status_code == 200:
-            st.success("✅ Data Berhasil Disimpan ke Database!")
+            # st.success("✅ Data Berhasil Disimpan ke Database!")
         else:
             st.error(f"❌ Gagal Simpan. Kode: {r.status_code}")
     except Exception as e:
@@ -85,7 +85,7 @@ def kirim_email_pdf(pdf_bytes, user_data):
         server.login(sender, password)
         server.send_message(msg)
         server.quit()
-        st.info("📩 Salinan laporan otomatis telah dikirim ke Admin.")
+        # st.info("📩 Salinan laporan otomatis telah dikirim ke Admin.")
     except Exception as e:
         st.error(f"⚠️ Gagal mengirim laporan: {e}")
 
@@ -389,16 +389,25 @@ else:
     # --- B. DISPLAY 1: TOMBOL SUBMIT & PDF (PALING ATAS) ---
     c_sub1, c_sub2 = st.columns(2)
     with c_sub1:
-        if st.button("💾 Submit Data", use_container_width=True):
+        # TOMBOL SIMPAN (Submit Data)
+    if st.button("💾 Submit Data ke Pusat", use_container_width=True):
+        # Gunakan spinner agar operator tahu proses sedang berjalan
+        with st.spinner("Sedang memproses data dan mengirim laporan..."):
             hasil_akhir = {
                 **st.session_state.user_data,
                 **st.session_state.scores,
                 "UrutanRanking": ranking_str,
                 "FokusTraining": training_summary
             }
+            
+            # 1. Jalankan Simpan ke Google Sheets
             simpan_ke_google_form(hasil_akhir)
+            
+            # 2. Jalankan Kirim Email PDF
             pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
             kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
+            
+            # 3. MUNCULKAN SATU NOTIFIKASI TUNGGAL
             st.success("✅ Data Berhasil Dikirim!")
 
     with c_sub2:
