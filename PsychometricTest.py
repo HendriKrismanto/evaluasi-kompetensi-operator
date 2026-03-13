@@ -295,12 +295,12 @@ if st.session_state.step == 0:
         col1, col2 = st.columns(2)
         with col1:
             nama = st.text_input("Nama Lengkap")
-            nik = st.text_input("NIK")
+            nik = st.text_input("NIK", placeholder="Contoh: JID01234")
             tanggal = st.date_input("Tanggal Evaluasi")
         with col2:
             line = st.selectbox("Line", ["C-EPS 1", "C-EPS 2", "C-EPS 3"])
             team = st.selectbox("Team", ["A", "B"])
-            lama_kerja = st.number_input("Lama Bekerja (Tahun)", min_value=0, step=1)
+            lama_kerja = st.selectbox("Lama Bekerja (Tahun)", ["<1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", ">10"])
         
         submit_data = st.form_submit_button("Mulai Evaluasi 🚀")
         
