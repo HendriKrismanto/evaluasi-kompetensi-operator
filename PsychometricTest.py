@@ -419,7 +419,7 @@ else:
 
     # --- E. DISPLAY 4: SKOR & RANKING ---
     st.subheader("🏆 Skor & Ranking Kompetensi")
-    st.info(f"**Urutan Kekuatan:** {ranking_str}")
+    # st.info(f"**Urutan Kekuatan:** {ranking_str}")
     
     cols = st.columns(len(sorted_scores))
     for i, (cat, score) in enumerate(sorted_scores):
