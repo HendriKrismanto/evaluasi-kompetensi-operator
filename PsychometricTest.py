@@ -407,28 +407,28 @@ else:
     with c_sub1:
         # TOMBOL SIMPAN (Submit Data)
         if st.button("💾 Submit Data", use_container_width=True):
-        with st.spinner("Memverifikasi data..."):
-            # A. Cek apakah NIK sudah pernah submit
-            nik_saat_ini = st.session_state.user_data.get('NIK')
-            
-            if cek_nik_terdaftar(nik_saat_ini):
-                st.error(f"🚫 Gagal! NIK {nik_saat_ini} sudah pernah melakukan evaluasi sebelumnya.")
-                st.warning("Satu NIK hanya diperbolehkan mengirim data satu kali.")
-            else:
-                # B. Jika belum ada, jalankan proses simpan seperti biasa
-                hasil_akhir = {
-                    **st.session_state.user_data,
-                    **st.session_state.scores,
-                    "UrutanRanking": ranking_str,
-                    "FokusTraining": training_summary
-                }
+            with st.spinner("Memverifikasi data..."):
+                # A. Cek apakah NIK sudah pernah submit
+                nik_saat_ini = st.session_state.user_data.get('NIK')
                 
-                simpan_ke_google_form(hasil_akhir)
-                
-                pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
-                kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
-                
-                st.success("✅ Data Berhasil Dikirim!")
+                if cek_nik_terdaftar(nik_saat_ini):
+                    st.error(f"🚫 Gagal! NIK {nik_saat_ini} sudah pernah melakukan evaluasi sebelumnya.")
+                    st.warning("Satu NIK hanya diperbolehkan mengirim data satu kali.")
+                else:
+                    # B. Jika belum ada, jalankan proses simpan seperti biasa
+                    hasil_akhir = {
+                        **st.session_state.user_data,
+                        **st.session_state.scores,
+                        "UrutanRanking": ranking_str,
+                        "FokusTraining": training_summary
+                    }
+                    
+                    simpan_ke_google_form(hasil_akhir)
+                    
+                    pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+                    kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
+                    
+                    st.success("✅ Data Berhasil Dikirim!")
 
     with c_sub2:
         pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
