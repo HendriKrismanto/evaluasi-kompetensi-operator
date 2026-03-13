@@ -51,7 +51,7 @@ def simpan_ke_google_form(data_dict):
     try:
         r = requests.post(url, data=payload)
         if r.status_code == 200:
-            # st.success("✅ Data Berhasil Disimpan ke Database!")
+            pass # st.success("✅ Data Berhasil Disimpan ke Database!")
         else:
             st.error(f"❌ Gagal Simpan. Kode: {r.status_code}")
     except Exception as e:
@@ -85,7 +85,7 @@ def kirim_email_pdf(pdf_bytes, user_data):
         server.login(sender, password)
         server.send_message(msg)
         server.quit()
-        # st.info("📩 Salinan laporan otomatis telah dikirim ke Admin.")
+        pass # st.info("📩 Salinan laporan otomatis telah dikirim ke Admin.")
     except Exception as e:
         st.error(f"⚠️ Gagal mengirim laporan: {e}")
 
