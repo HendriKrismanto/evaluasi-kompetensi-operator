@@ -436,8 +436,8 @@ else:
         #     st.download_button("📂 Download CSV Detail", csv, f"Data_{st.session_state.user_data.get('Nama')}.csv", "text/csv")
             
         # with c2:
-        #     pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
-        #     st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf")
+            pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+            st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf")
 
     # if st.button("Ulangi Tes"):
     #     st.session_state.clear()
