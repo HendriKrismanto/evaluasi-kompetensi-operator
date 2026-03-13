@@ -109,7 +109,7 @@ def check_password():
     """Returns True if the user had the correct password."""
 
     def password_entered():
-        if st.session_state["password"] == st.secrets["password"]:
+        if st.session_state["password"] == st.secrets["password_admin"]:
             st.session_state["password_correct"] = True
             st.session_state["role"] = "admin" # Set sebagai admin jika password ini benar
             del st.session_state["password"]
