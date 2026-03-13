@@ -300,7 +300,7 @@ if st.session_state.step == 0:
         with col2:
             line = st.selectbox("Line", ["C-EPS 1", "C-EPS 2", "C-EPS 3"])
             team = st.selectbox("Team", ["A", "B"])
-            lama_kerja = st.selectbox("Lama Bekerja (Tahun)", ["<1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", ">10"])
+            lama_kerja = st.selectbox("Lama Bekerja (Tahun)", ["< 1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "> 10"])
         
         submit_data = st.form_submit_button("Mulai Evaluasi 🚀")
         
