@@ -7,25 +7,39 @@ import io
 # --- 1. KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="Dashboard Rekap", layout="wide")
 
-# --- 2. CSS KHUSUS UNTUK PRINT A4 ---
+# --- 2. CSS KHUSUS UNTUK PRINT A4 (VERSI PERBAIKAN MULTI-HALAMAN) ---
 st.markdown("""
     <style>
     @media print {
-        /* Sembunyikan Sidebar, Tombol, dan Header Streamlit saat Print */
-        [data-testid="stSidebar"], .stButton, .stDownloadButton, header, footer {
+        /* 1. Paksa semua container untuk memanjang ke bawah (Menghapus Scroll) */
+        .main, .stApp, .block-container, [data-testid="stVerticalBlock"] {
+            display: block !important;
+            position: static !important;
+            height: auto !important;
+            overflow: visible !important;
+            float: none !important;
+        }
+
+        /* 2. Sembunyikan elemen yang tidak perlu */
+        [data-testid="stSidebar"], .stButton, .stDownloadButton, header, footer, [data-testid="stHeader"] {
             display: none !important;
         }
-        /* Paksa konten menggunakan lebar penuh */
+
+        /* 3. Atur Margin & Padding agar Pas di A4 */
         .main .block-container {
-            padding: 0 !important;
-            margin: 0 !important;
-            width: 100% !important;
+            padding-top: 1cm !important;
+            padding-bottom: 1cm !important;
+            max-width: 100% !important;
         }
-        /* Atur agar grafik tidak terpotong di tengah halaman */
-        .element-container {
-            page-break-inside: avoid;
+
+        /* 4. Hindari pemotongan grafik di tengah halaman */
+        .element-container, img, .stPlotlyChart {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
-        h1, h2, h3 {
+
+        /* 5. Pastikan teks berwarna hitam pekat */
+        h1, h2, h3, p, span {
             color: black !important;
         }
     }
