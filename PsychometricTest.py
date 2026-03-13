@@ -436,8 +436,8 @@ else:
                     st.write(f"- {item}")
 
     # --- G. DISPLAY 6: DOWNLOAD CSV (PALING BAWAH) ---
-    st.divider()
-    full_data = {**st.session_state.user_data, **st.session_state.scores, "UrutanRanking": ranking_str, "FokusTraining": training_summary}
-    df_export = pd.DataFrame([full_data])
-    csv = df_export.to_csv(index=False).encode('utf-8')
-    st.download_button("📂 Download CSV Detail", csv, f"Data_{st.session_state.user_data.get('Nama')}.csv", "text/csv", use_container_width=True)
+    # st.divider()
+    # full_data = {**st.session_state.user_data, **st.session_state.scores, "UrutanRanking": ranking_str, "FokusTraining": training_summary}
+    # df_export = pd.DataFrame([full_data])
+    # csv = df_export.to_csv(index=False).encode('utf-8')
+    # st.download_button("📂 Download CSV Detail", csv, f"Data_{st.session_state.user_data.get('Nama')}.csv", "text/csv", use_container_width=True)
