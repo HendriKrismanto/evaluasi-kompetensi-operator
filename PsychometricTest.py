@@ -390,16 +390,16 @@ else:
     c_sub1, c_sub2 = st.columns(2)
     with c_sub1:
         # TOMBOL SIMPAN (Submit Data)
-    if st.button("💾 Submit Data ke Pusat", use_container_width=True):
-        # Gunakan spinner agar operator tahu proses sedang berjalan
-        with st.spinner("Sedang memproses data dan mengirim laporan..."):
-            hasil_akhir = {
-                **st.session_state.user_data,
-                **st.session_state.scores,
-                "UrutanRanking": ranking_str,
-                "FokusTraining": training_summary
-            }
-            
+        if st.button("💾 Submit Data ke Pusat", use_container_width=True):
+            # Gunakan spinner agar operator tahu proses sedang berjalan
+            with st.spinner("Sedang memproses data dan mengirim laporan..."):
+                hasil_akhir = {
+                    **st.session_state.user_data,
+                    **st.session_state.scores,
+                    "UrutanRanking": ranking_str,
+                    "FokusTraining": training_summary
+                }
+                
             # 1. Jalankan Simpan ke Google Sheets
             simpan_ke_google_form(hasil_akhir)
             
