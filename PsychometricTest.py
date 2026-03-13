@@ -362,103 +362,82 @@ elif not st.session_state.finished:
 else:
     st.header("📊 Profil Kompetensi Operator")
 
-    # --- 1. Tampilan Data Diri ---
+    # --- A. PERHITUNGAN DATA (WAJIB DI ATAS AGAR TOMBOL BISA MEMBACA DATA) ---
+    sorted_scores = sorted(st.session_state.scores.items(), key=lambda x: x[1], reverse=True)
+    ranking_str = ", ".join([f"{c}({s}pts)" for c, s in sorted_scores])
+    
+    rekomendasi_list = []
+    training_summary = ""
+    if st.session_state.weakness_statements:
+        df_weak = pd.DataFrame(st.session_state.weakness_statements)
+        if not df_weak.empty:
+            weak_counts = df_weak['cat'].value_counts()
+            for cat, count in weak_counts.items():
+                items_list = df_weak[df_weak['cat'] == cat]['text'].unique()
+                items_str = "/".join(items_list)
+                rekomendasi_list.append(f"[{cat}]: {items_str}")
+            training_summary = " | ".join(rekomendasi_list)
+
+    # Persiapan Gambar Radar untuk PDF/Submit
+    categories = list(st.session_state.scores.keys())
+    values = list(st.session_state.scores.values())
+    radar_values = values + [values[0]]
+    radar_cats = categories + [categories[0]]
+    fig = go.Figure(data=go.Scatterpolar(r=radar_values, theta=radar_cats, fill='toself', line_color='teal'))
+    fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[-12, 12])))
+
+    # --- B. DISPLAY 1: TOMBOL SUBMIT & PDF (PALING ATAS) ---
+    c_sub1, c_sub2 = st.columns(2)
+    with c_sub1:
+        if st.button("💾 Submit Data", use_container_width=True):
+            hasil_akhir = {
+                **st.session_state.user_data,
+                **st.session_state.scores,
+                "UrutanRanking": ranking_str,
+                "FokusTraining": training_summary
+            }
+            simpan_ke_google_form(hasil_akhir)
+            pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+            kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
+            st.success("✅ Data Berhasil Dikirim!")
+
+    with c_sub2:
+        pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+        st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf", use_container_width=True)
+
+    st.divider()
+
+    # --- C. DISPLAY 2: INFORMASI OPERATOR ---
     with st.expander("📝 Informasi Operator", expanded=True):
         col1, col2 = st.columns(2)
         d = st.session_state.user_data
         col1.markdown(f"**Nama:** {d.get('Nama')}\n\n**NIK:** {d.get('NIK')}\n\n**Tanggal:** {d.get('Tanggal')}")
         col2.markdown(f"**Line:** {d.get('Line')}\n\n**Team:** {d.get('Team')}\n\n**Lama Kerja:** {d.get('Lama Bekerja')} Thn")
 
-    # --- 2. Radar Chart ---
-    categories = list(st.session_state.scores.keys())
-    values = list(st.session_state.scores.values())
-    radar_values = values + [values[0]]
-    radar_cats = categories + [categories[0]]
-    
-    fig = go.Figure(data=go.Scatterpolar(r=radar_values, theta=radar_cats, fill='toself', line_color='teal'))
-    fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[-12, 12])))
-    st.plotly_chart(fig)
+    # --- D. DISPLAY 3: RADAR CHART ---
+    st.plotly_chart(fig, use_container_width=True)
 
-    # --- 3. Skor Kompetensi (%) & Ranking ---
+    # --- E. DISPLAY 4: SKOR & RANKING ---
     st.subheader("🏆 Skor & Ranking Kompetensi")
-    # Urutkan dari yang tertinggi
-    sorted_scores = sorted(st.session_state.scores.items(), key=lambda x: x[1], reverse=True)
-
-    # Menyusun Ranking dan Skor ke string tunggal untuk CSV
-    ranking_str = ", ".join([f"{c}({s}pts)" for c, s in sorted_scores])
+    st.info(f"**Urutan Kekuatan:** {ranking_str}")
     
     cols = st.columns(len(sorted_scores))
     for i, (cat, score) in enumerate(sorted_scores):
-        # Konversi skor ke persentase (Contoh: skor 5 = 100%, skor 0 = 50%, skor -5 = 0%)
-        # Rumus: ((score + 5) / 10) * 100
         persentase = int(((score + 12) / 24) * 100)
         cols[i].metric(label=cat, value=f"{persentase}%", delta=f"{score} pts")
 
-    # --- 4. Rekomendasi Training (Berdasarkan Least Terbanyak) ---
+    # --- F. DISPLAY 5: REKOMENDASI TRAINING ---
     st.subheader("📚 Rekomendasi Training")
     if st.session_state.weakness_statements:
-        df_weak = pd.DataFrame(st.session_state.weakness_statements)
-        rekomendasi_list = []
-        
-        if not df_weak.empty:
-            weak_counts = df_weak['cat'].value_counts()
+        for cat, count in weak_counts.items():
+            items_list = df_weak[df_weak['cat'] == cat]['text'].unique()
+            with st.expander(f"⚠️ {cat} ({count} poin)", expanded=True):
+                for item in items_list:
+                    st.write(f"- {item}")
 
-            for cat, count in weak_counts.items():
-                # Ambil poin-poin pernyataan yang dipilih sebagai 'Least'
-                items_list = df_weak[df_weak['cat'] == cat]['text'].unique()
-                
-                with st.expander(f"⚠️ {cat} ({count} poin)", expanded=True):
-                    for item in items_list:
-                        st.write(f"- {item}")
-                
-                # Simpan untuk keperluan CSV
-                items_str = "/".join(items_list)
-                rekomendasi_list.append(f"[{cat}]: {items_str}")
-            # -------------------------------------------------------
-
-        training_summary = " | ".join(rekomendasi_list)
-
-        # Gabungkan semua ke satu baris data
-        full_data = {
-            **st.session_state.user_data,
-            **{k: v for k, v in st.session_state.scores.items()},
-            "UrutanRanking": ranking_str,
-            "FokusTraining": training_summary
-        }
-        df_export = pd.DataFrame([full_data])
-
-        # 3. Tombol Download
-        # st.divider()
-        # c1, c2 = st.columns(2)
-        
-        # with c1:
-        #     csv = df_export.to_csv(index=False).encode('utf-8')
-        #     st.download_button("📂 Download CSV Detail", csv, f"Data_{st.session_state.user_data.get('Nama')}.csv", "text/csv")
-            
-        # with c2:
-            pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
-            st.download_button("📥 Download PDF Laporan", data=bytes(pdf_out), file_name=f"Laporan_{st.session_state.user_data.get('Nama')}.pdf")
-
-    # if st.button("Ulangi Tes"):
-    #     st.session_state.clear()
-    #     st.rerun()
-
-    # TOMBOL SIMPAN
-    if st.button("💾 Submit Data", use_container_width=True):
-        # A. Gabungkan data untuk Google Sheets
-        hasil_akhir = {
-            **st.session_state.user_data,
-            **st.session_state.scores,
-            "UrutanRanking": ranking_str,
-            "FokusTraining": training_summary
-        }
-        
-        # B. Jalankan Fungsi Simpan Google Form
-        simpan_ke_google_form(hasil_akhir)
-        
-        # C. Jalankan Fungsi Kirim Email PDF
-        # Kita buat PDF-nya dulu di memori
-        pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
-        
-        # Kirim PDF dalam bentuk bytes
-        kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
+    # --- G. DISPLAY 6: DOWNLOAD CSV (PALING BAWAH) ---
+    st.divider()
+    full_data = {**st.session_state.user_data, **st.session_state.scores, "UrutanRanking": ranking_str, "FokusTraining": training_summary}
+    df_export = pd.DataFrame([full_data])
+    csv = df_export.to_csv(index=False).encode('utf-8')
+    st.download_button("📂 Download CSV Detail", csv, f"Data_{st.session_state.user_data.get('Nama')}.csv", "text/csv", use_container_width=True)
