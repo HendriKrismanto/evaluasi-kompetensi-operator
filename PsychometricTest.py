@@ -113,8 +113,7 @@ def check_password():
             st.session_state["password_correct"] = True
             st.session_state["role"] = "admin" # Set sebagai admin jika password ini benar
             del st.session_state["password"]
-        elif st.session_state["password"] == "JID12345": # Contoh password operator
-            st.session_state["password_correct"] = True
+        elif st.session_state["password"] == st.secrets["password_operator"]:
             st.session_state["role"] = "operator" # Set sebagai operator
             del st.session_state["password"]
         else:
