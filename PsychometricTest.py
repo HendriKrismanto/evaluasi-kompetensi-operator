@@ -57,6 +57,22 @@ def simpan_ke_google_form(data_dict):
     except Exception as e:
         st.error(f"⚠️ Error Koneksi: {e}")
 
+def cek_nik_terdaftar(nik):
+    """Mengecek apakah NIK sudah ada di Google Sheets"""
+    if "connections" in st.secrets and "gsheets" in st.secrets.connections:
+        url = st.secrets.connections.gsheets.spreadsheet
+        # Konversi URL ke format export CSV agar bisa dibaca Python
+        csv_url = url.replace('/edit?usp=sharing', '/export?format=csv').replace('/edit', '/export?format=csv')
+        try:
+            # Baca data dari Sheets tanpa simpan di cache (ttl=0)
+            df_cek = pd.read_csv(csv_url)
+            if 'NIK' in df_cek.columns:
+                # Cek apakah NIK input ada di kolom NIK database
+                return str(nik) in df_cek['NIK'].astype(str).values
+        except:
+            return False
+    return False
+
 def kirim_email_pdf(pdf_bytes, user_data):
     # Mengambil data dari Secrets yang baru Anda isi
     sender = st.secrets["email_sender"]
@@ -390,9 +406,16 @@ else:
     c_sub1, c_sub2 = st.columns(2)
     with c_sub1:
         # TOMBOL SIMPAN (Submit Data)
-        if st.button("💾 Submit Data ke Pusat", use_container_width=True):
-            # Gunakan spinner agar operator tahu proses sedang berjalan
-            with st.spinner("Sedang memproses data dan mengirim laporan..."):
+        if st.button("💾 Submit Data", use_container_width=True):
+        with st.spinner("Memverifikasi data..."):
+            # A. Cek apakah NIK sudah pernah submit
+            nik_saat_ini = st.session_state.user_data.get('NIK')
+            
+            if cek_nik_terdaftar(nik_saat_ini):
+                st.error(f"🚫 Gagal! NIK {nik_saat_ini} sudah pernah melakukan evaluasi sebelumnya.")
+                st.warning("Satu NIK hanya diperbolehkan mengirim data satu kali.")
+            else:
+                # B. Jika belum ada, jalankan proses simpan seperti biasa
                 hasil_akhir = {
                     **st.session_state.user_data,
                     **st.session_state.scores,
@@ -400,15 +423,12 @@ else:
                     "FokusTraining": training_summary
                 }
                 
-            # 1. Jalankan Simpan ke Google Sheets
-            simpan_ke_google_form(hasil_akhir)
-            
-            # 2. Jalankan Kirim Email PDF
-            pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
-            kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
-            
-            # 3. MUNCULKAN SATU NOTIFIKASI TUNGGAL
-            st.success("✅ Data Berhasil Dikirim!")
+                simpan_ke_google_form(hasil_akhir)
+                
+                pdf_file = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
+                kirim_email_pdf(bytes(pdf_file), st.session_state.user_data)
+                
+                st.success("✅ Data Berhasil Dikirim!")
 
     with c_sub2:
         pdf_out = buat_pdf(st.session_state.scores, fig, st.session_state.user_data, st.session_state.weakness_statements)
